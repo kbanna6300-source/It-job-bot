@@ -2,7 +2,7 @@ name: Daily IT Job Bot Update
 
 on:
   schedule:
-    - cron: '30 3,12 * * *'
+    - cron: '* * * * *'
   workflow_dispatch:
 
 jobs:
