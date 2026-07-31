@@ -1,31 +1,39 @@
-from config import JOB_KEYWORDS
+import feedparser
+import urllib.parse
 
 def fetch_jobs():
-    sample_jobs = [
+    jobs = []
+    
+    # 1. Direct Search Links (Standard Job Boards)
+    standard_jobs = [
         {
             "title": "Desktop Support Engineer L1",
-            "company": "TechCorp Solutions",
+            "company": "LinkedIn Hiring Posts",
             "location": "Mumbai / Remote",
-            "link": "https://example.com/job1"
+            "link": "https://www.linkedin.com/search/results/content/?keywords=hiring%20desktop%20support"
         },
         {
-            "title": "Service Desk Analyst",
-            "company": "Global IT Services",
-            "location": "Bangalore / Hybrid",
-            "link": "https://example.com/job2"
-        },
-        {
-            "title": "IT Helpdesk Technician",
-            "company": "InfoTech Pvt Ltd",
-            "location": "Delhi NCR",
-            "link": "https://example.com/job3"
+            "title": "Service Desk & Helpdesk Posts",
+            "company": "LinkedIn User Posts",
+            "location": "India",
+            "link": "https://www.linkedin.com/search/results/content/?keywords=hiring%20service%20desk"
         }
     ]
+    jobs.extend(standard_jobs)
 
-    filtered_jobs = []
-    for job in sample_jobs:
-        title_lower = job["title"].lower()
-        if any(keyword.lower() in title_lower for keyword in JOB_KEYWORDS):
-            filtered_jobs.append(job)
+    # 2. LinkedIn Posts via Google Alerts RSS
+    keywords = ["hiring desktop support", "hiring helpdesk technician"]
+    for query in keywords:
+        encoded_query = urllib.parse.quote(f'site:linkedin.com/posts "{query}"')
+        rss_url = f"https://www.google.com/alerts/feeds/12345678/search?q={encoded_query}"
+        
+        feed = feedparser.parse(rss_url)
+        for entry in feed.entries[:3]: # Har query se top 3 posts
+            jobs.append({
+                "title": f"LinkedIn Post: {entry.title}",
+                "company": "Direct Recruiter Post",
+                "location": "Check Post Details",
+                "link": entry.link
+            })
 
-    return filtered_jobs
+    return jobs
