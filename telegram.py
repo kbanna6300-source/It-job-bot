@@ -8,75 +8,70 @@ CHANNEL_ID = os.getenv("CHANNEL_ID")
 def fetch_jobs():
     jobs = []
     
-    # 1. GOOGLE ALERT RSS (LinkedIn Recruiter Posts)
+    # 1. Google Alert RSS Feed (Direct Recruiter Hiring Posts)
     google_rss_url = "https://www.google.com/alerts/feeds/13318065566925002046/7814502131971754024"
     try:
         g_feed = feedparser.parse(google_rss_url)
         for entry in g_feed.entries[:5]:
+            # Simple clean details extraction
+            clean_title = entry.title.replace("<b>", "").replace("</b>", "")
             jobs.append({
-                "type": "RECRUITER_POST",
-                "title": entry.title,
-                "summary": entry.summary if 'summary' in entry else "LinkedIn post details available in link.",
+                "type": "RECRUITER",
+                "title": clean_title,
+                "summary": entry.summary if 'summary' in entry else "Direct LinkedIn Recruiter Hiring Post",
                 "link": entry.link
             })
     except Exception as e:
         print(f"Error RSS: {e}")
 
-    # 2. DIRECT PORTALS
+    # 2. Direct India Specific Openings
     jobs.append({
-        "type": "PORTAL",
-        "title": "Desktop Support / Helpdesk Urgent Openings",
-        "company": "Naukri & LinkedIn Direct Search",
-        "location": "Pan India / Remote",
-        "role_details": "L1/L2 Desktop Support, Hardware & Networking, Troubleshooting, Service Desk",
-        "link": "https://www.naukri.com/desktop-support-jobs"
+        "type": "DIRECT",
+        "title": "Desktop Support / Helpdesk Engineer Openings",
+        "company": "Naukri India Jobs",
+        "location": "India (PAN India / Remote)",
+        "details": "Requirement for L1/L2 Desktop Support, Hardware, Networking & Service Desk Roles.",
+        "link": "https://www.naukri.com/desktop-support-engineer-jobs-in-india"
     })
 
     return jobs
 
 def send_telegram_message(job):
-    if job.get("type") == "RECRUITER_POST":
-        # Recruiter direct post format
-        message = f"""📢 *DIRECT RECRUITER / HR POST*
+    if job.get("type") == "RECRUITER":
+        message = f"""📢 *DIRECT HR / RECRUITER POST*
 
-📌 *Post Heading:*
+📌 *Role / Post:* 
 {job['title']}
 
-📄 *Details & Requirements:*
-{job['summary'][:300]}...
+📄 *Details:*
+{job['summary']}
 
-💡 *Kevi Rite Apply Karvu?*
-1. Niche aapeli link par click karo.
-2. Direct Recruiter/HR ni LinkedIn post kholse.
-3. Post ma aapeil HR Email ID par CV moklo OR Direct Message (DM) karo.
+💡 *Kevi rite apply karvu?*
+1. Niche aapeil link par click karo.
+2. Post ma aapeil HR email par CV moklo ya direct message (DM) karo.
 
-🔗 *Direct Post Link:*
-{job['link']}"""
-
+🔗 [Click Here to View Post & Apply]({job['link']})"""
     else:
-        # Standard Job Portal format
-        message = f"""💼 *DIRECT COMPANY JOB BOARD*
+        message = f"""💼 *URGENT IT JOB OPENING*
 
 📌 *Role:* {job['title']}
-🏢 *Portal/Company:* {job['company']}
+🏢 *Portal:* {job['company']}
 📍 *Location:* {job['location']}
 
-📄 *Required Skills:* 
-{job['role_details']}
+📄 *Skills Required:* 
+{job['details']}
 
-💡 *Kevi Rite Apply Karvu?*
-1. Link kholi ne portal par login karo.
-2. "Apply" button par click karine tamaro Updated CV upload karo.
+💡 *Kevi rite apply karvu?*
+1. Link open karine portal par CV upload karo.
 
-🔗 *Apply Link:*
-{job['link']}"""
+🔗 [Apply Here]({job['link']})"""
 
     url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
     payload = {
         "chat_id": CHANNEL_ID,
         "text": message,
         "parse_mode": "Markdown",
-        "disable_web_page_preview": False  # Enabels Photo/Link Preview inside Telegram!
+        "disable_web_page_preview": False
     }
     
     try:
