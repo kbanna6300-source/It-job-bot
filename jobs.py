@@ -36,3 +36,4 @@ def fetch_jobs():
         print(f"Error fetching RSS: {e}")
 
     return jobs
+
