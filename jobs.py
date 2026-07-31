@@ -4,36 +4,39 @@ import urllib.parse
 def fetch_jobs():
     jobs = []
     
-    # 1. Direct Search Links (Standard Job Boards)
+    # 1. Standard Job Searches (Naukri, LinkedIn Job Search)
     standard_jobs = [
         {
-            "title": "Desktop Support Engineer L1",
-            "company": "LinkedIn Hiring Posts",
-            "location": "Mumbai / Remote",
-            "link": "https://www.linkedin.com/search/results/content/?keywords=hiring%20desktop%20support"
+            "title": "Desktop Support Engineer Jobs",
+            "company": "Naukri.com",
+            "location": "India",
+            "link": "https://www.naukri.com/desktop-support-engineer-jobs"
         },
         {
-            "title": "Service Desk & Helpdesk Posts",
-            "company": "LinkedIn User Posts",
+            "title": "IT Helpdesk / Service Desk Jobs",
+            "company": "LinkedIn Job Board",
             "location": "India",
-            "link": "https://www.linkedin.com/search/results/content/?keywords=hiring%20service%20desk"
+            "link": "https://www.linkedin.com/jobs/search/?keywords=desktop%20support"
         }
     ]
     jobs.extend(standard_jobs)
 
-    # 2. LinkedIn Posts via Google Alerts RSS
+    # 2. LinkedIn Direct User/Recruiter Posts (Google Alerts RSS)
     keywords = ["hiring desktop support", "hiring helpdesk technician"]
     for query in keywords:
         encoded_query = urllib.parse.quote(f'site:linkedin.com/posts "{query}"')
         rss_url = f"https://www.google.com/alerts/feeds/12345678/search?q={encoded_query}"
         
-        feed = feedparser.parse(rss_url)
-        for entry in feed.entries[:3]: # Har query se top 3 posts
-            jobs.append({
-                "title": f"LinkedIn Post: {entry.title}",
-                "company": "Direct Recruiter Post",
-                "location": "Check Post Details",
-                "link": entry.link
-            })
+        try:
+            feed = feedparser.parse(rss_url)
+            for entry in feed.entries[:2]:  # Top 2 posts per keyword
+                jobs.append({
+                    "title": f"LinkedIn Post: {entry.title}",
+                    "company": "Direct Recruiter Post",
+                    "location": "Check Post",
+                    "link": entry.link
+                })
+        except Exception as e:
+            print(f"RSS Fetch Error: {e}")
 
     return jobs
